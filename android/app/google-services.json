@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "81843600625",
+    "project_id": "pixel-snake-6bd66",
+    "storage_bucket": "pixel-snake-6bd66.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:81843600625:android:a25dcd8e8950bbb0fcfd50",
+        "android_client_info": {
+          "package_name": "com.example.pixel_snake"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcjZ703jvZj8WiCDf7MoQU96gjPCyRNzA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
