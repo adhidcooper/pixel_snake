@@ -1,11 +1,26 @@
 // import 'package:flame/game.dart';
 import 'package:pixel_snake/home_page.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 
-void main() {
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized(); 
+  await initializeFirebase();
   runApp(const MyApp());
+}
+Future<void> initializeFirebase() async {
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+    print('Firebase initialized successfully');
+  } catch (e) {
+    print('Error initializing Firebase: $e');
+    
+  }
 }
 
 class MyApp extends StatelessWidget {
