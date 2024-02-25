@@ -1,13 +1,14 @@
 {
   "project_info": {
-    "project_number": "81843600625",
-    "project_id": "pixel-snake-6bd66",
-    "storage_bucket": "pixel-snake-6bd66.appspot.com"
+    "project_number": "589652021108",
+    "firebase_url": "https://pixelsnake-8c339-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "pixelsnake-8c339",
+    "storage_bucket": "pixelsnake-8c339.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:81843600625:android:a25dcd8e8950bbb0fcfd50",
+        "mobilesdk_app_id": "1:589652021108:android:0d227027574155f722e621",
         "android_client_info": {
           "package_name": "com.example.pixel_snake"
         }
@@ -15,7 +16,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAcjZ703jvZj8WiCDf7MoQU96gjPCyRNzA"
+          "current_key": "AIzaSyA932Pz-B3aZxOUdTcwGyB3P0LSeDm9X88"
         }
       ],
       "services": {

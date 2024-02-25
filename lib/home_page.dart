@@ -6,7 +6,18 @@ import 'package:pixel_snake/blank_pixel.dart';
 import 'package:pixel_snake/food_pixel.dart';
 import 'package:pixel_snake/snake_pixel.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+// import 'firebase_initialization.dart';
 // import 'package:flutter/widgets.dart';
+
+Future<void> initializeFirebase() async {
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,6 +30,7 @@ enum snakeDirection { UP, DOWN, LEFT, RIGHT }
 
 class _HomePageState extends State<HomePage> {
   // grid dimensions
+TextEditingController playerNameController = TextEditingController();
   int rowSize = 10;
   int totalNumberOfSquares = 100;
 
@@ -41,17 +53,60 @@ class _HomePageState extends State<HomePage> {
   int foodPos = 55;
 
   // Start the Game
-  void startGame() {
-    gameHasStarted = true;
-    Timer.periodic(const Duration(milliseconds: 200), (timer) {
-      setState(() {
-        // Keep the snake moving!
-        moveSnake();
+   void startGame() {
+  initializeFirebase();
+  gameHasStarted = true;
+  Timer.periodic(const Duration(milliseconds: 200), (timer) {
+    setState(() {
+      // Keep the snake moving!
+      moveSnake();
+      List<int> fetchedScoreValues = [];
+      // check if the game is over
+      if (gameOver()) {
+        timer.cancel();
+        CollectionReference scoresRef = FirebaseFirestore.instance.collection('scores');
+        scoresRef.orderBy('scoreValue', descending: true).limit(5).get().then((QuerySnapshot querySnapshot) {
+          // Clear existing fetched score values
+          fetchedScoreValues.clear();
+          querySnapshot.docs.forEach((DocumentSnapshot doc) {
+            // Fetch and store scoreValue
+            int scoreValue = doc['scoreValue'];
+            fetchedScoreValues.add(scoreValue);
+          });
+          // print('Current Score: $currentScore, Old Score: $fetchedScoreValues[0]');
+          showCongratulationsMessage(currentScore,fetchedScoreValues);
+         
+        });
+      }
+    });
+  });
+}
 
-        // check if the game is over
-        if (gameOver()) {
-          timer.cancel();
-          // display a message to user
+void showCongratulationsMessage(int currentScore, List<int> oldScore) {
+  if (currentScore>=oldScore[0]) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Congratulations!'),
+          content: Text('You achieved a new high score: $currentScore'),
+          actions: [
+            MaterialButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  showScoreChart(oldScore);
+}
+void showScoreChart(List<int> fetchedScoreValues){
+   // display a message to user
           showDialog(
             context: context,
             barrierDismissible: false,
@@ -63,32 +118,39 @@ class _HomePageState extends State<HomePage> {
                     children: [
                       Text('Your Score is: ${currentScore.toString()}'),
                       const TextField(
+                        // controller: playerNameController,
                         decoration: InputDecoration(hintText: 'Enter Name'),
-                      )
+                        
+                      ),
+                      const Text("Highest Scores:"),
+                      for (int scoreValue in fetchedScoreValues) Text('$scoreValue'),
                     ],
                   ),
                   actions: [
                     MaterialButton(
                       onPressed: () {
-                        submitScore();
+                        int scoreValue = currentScore;
+                        submitScore(scoreValue);
                         Navigator.pop(context);
                         newGame();
                       },
-                      child: const Text('Submit'),
                       color: Colors.pink,
+                      child: const Text('Submit'),
                     )
                   ],
                 ),
               );
             },
           );
-        }
-      });
-    });
-  }
-
-  void submitScore() {
-    //
+}
+  void submitScore(int scoreValue) {
+    CollectionReference scoresRef = FirebaseFirestore.instance.collection('scores');
+  scoresRef.add({
+    
+    'scoreValue': scoreValue,
+   
+  });
+   print("Added to firebase");
   }
 
   void newGame() {
@@ -173,7 +235,9 @@ class _HomePageState extends State<HomePage> {
     // the game is over when the snake runs into itself
     List<int> bodySnake = snakePos.sublist(0, snakePos.length - 1);
     if (bodySnake.contains(snakePos.last)) {
+      print("Inside snake");
       return true;
+      
     }
     return false;
   }
