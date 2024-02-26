@@ -83,8 +83,7 @@ TextEditingController playerNameController = TextEditingController();
 }
 
 void showCongratulationsMessage(int currentScore, List<int> oldScore) {
-  // if (currentScore>=oldScore[0]) {
-      if (currentScore<10) {
+  if (currentScore>=oldScore[0]) {
     showDialog(
       context: context,
       barrierDismissible: false,
