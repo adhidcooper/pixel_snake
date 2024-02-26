@@ -21,6 +21,13 @@ Future<void> initializeFirebase() async {
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+   @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      title: 'Retrieve Text Input',
+      home: HomePage(),
+    );
+  }
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -30,6 +37,16 @@ enum snakeDirection { UP, DOWN, LEFT, RIGHT }
 
 class _HomePageState extends State<HomePage> {
   // grid dimensions
+  final myController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is disposed.
+    myController.dispose();
+    super.dispose();
+  }
+
+  
 TextEditingController playerNameController = TextEditingController();
   int rowSize = 10;
   int totalNumberOfSquares = 100;
@@ -60,7 +77,7 @@ TextEditingController playerNameController = TextEditingController();
     setState(() {
       // Keep the snake moving!
       moveSnake();
-      List<int> fetchedScoreValues = [];
+      List<Map<String, dynamic>> fetchedScoreValues = [];
       // check if the game is over
       if (gameOver()) {
         timer.cancel();
@@ -70,8 +87,9 @@ TextEditingController playerNameController = TextEditingController();
           fetchedScoreValues.clear();
           querySnapshot.docs.forEach((DocumentSnapshot doc) {
             // Fetch and store scoreValue
+            String playerName = doc['playerName'];
             int scoreValue = doc['scoreValue'];
-            fetchedScoreValues.add(scoreValue);
+            fetchedScoreValues.add({'playerName': playerName, 'scoreValue': scoreValue}); 
           });
           // print('Current Score: $currentScore, Old Score: $fetchedScoreValues[0]');
           showCongratulationsMessage(currentScore,fetchedScoreValues);
@@ -82,8 +100,9 @@ TextEditingController playerNameController = TextEditingController();
   });
 }
 
-void showCongratulationsMessage(int currentScore, List<int> oldScore) {
-  if (currentScore>=oldScore[0]) {
+void showCongratulationsMessage(int currentScore, List<Map<String, dynamic>> oldScore) {
+  if (currentScore>=oldScore[0]['scoreValue']) {
+  // if (currentScore<20) {
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -105,52 +124,77 @@ void showCongratulationsMessage(int currentScore, List<int> oldScore) {
   }
   showScoreChart(oldScore);
 }
-void showScoreChart(List<int> fetchedScoreValues){
-   // display a message to user
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) {
-              return Expanded(
-                child: AlertDialog(
-                  title: const Text('Game Over'),
-                  content: Column(
-                    children: [
-                      Text('Your Score is: ${currentScore.toString()}'),
-                      const TextField(
-                        // controller: playerNameController,
-                        decoration: InputDecoration(hintText: 'Enter Name'),
-                        
-                      ),
-                      const Text("Highest Scores:"),
-                      for (int scoreValue in fetchedScoreValues) Text('$scoreValue'),
-                    ],
-                  ),
-                  actions: [
-                    MaterialButton(
-                      onPressed: () {
-                        int scoreValue = currentScore;
-                        submitScore(scoreValue);
-                        Navigator.pop(context);
-                        newGame();
-                      },
-                      color: Colors.pink,
-                      child: const Text('Submit'),
-                    )
-                  ],
-                ),
-              );
-            },
+void showScoreChart(List<Map<String, dynamic>> fetchedScoreValues) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Game Over'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Your Score is: ${currentScore.toString()}'),
+              const SizedBox(height: 10), // Add some spacing
+               TextField(
+                controller: playerNameController,
+                decoration: InputDecoration(hintText: 'Enter Name'),
+              ),
+              const SizedBox(height: 10), // Add some spacing
+              const Text("Highest Scores:"),
+             for (Map<String, dynamic> score in fetchedScoreValues)
+                  Text('${score['playerName']} - ${score['scoreValue']}'),
+
+            ],
+          ),
+        ),
+        actions: [
+          MaterialButton(
+  onPressed: () {
+    String enteredName = playerNameController.text;
+    if (enteredName.isNotEmpty) {
+      submitScore(currentScore, enteredName);
+      playerNameController.clear(); // Clearing the input field
+      Navigator.pop(context);
+      newGame();
+    } else {
+      // Show a message indicating that the name must be entered
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: const Text('Please enter your name.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('OK'),
+              ),
+            ],
           );
+        },
+      );
+    }
+  },
+  color: Colors.pink,
+  child: const Text('Submit'),
+)
+
+        ],
+      );
+    },
+  );
 }
-  void submitScore(int scoreValue) {
+  void submitScore(int scoreValue, String playerName) {
     CollectionReference scoresRef = FirebaseFirestore.instance.collection('scores');
-  scoresRef.add({
-    
-    'scoreValue': scoreValue,
-   
-  });
-   print("Added to firebase");
+    scoresRef.add({
+      'scoreValue': scoreValue,
+      'playerName': playerName,
+    });
+    print("Added to firebase");
   }
 
   void newGame() {
