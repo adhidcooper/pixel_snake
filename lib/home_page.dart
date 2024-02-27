@@ -82,7 +82,7 @@ TextEditingController playerNameController = TextEditingController();
       if (gameOver()) {
         timer.cancel();
         CollectionReference scoresRef = FirebaseFirestore.instance.collection('scores');
-        scoresRef.orderBy('scoreValue', descending: true).limit(5).get().then((QuerySnapshot querySnapshot) {
+        scoresRef.orderBy('scoreValue', descending: true).limit(3).get().then((QuerySnapshot querySnapshot) {
           // Clear existing fetched score values
           fetchedScoreValues.clear();
           querySnapshot.docs.forEach((DocumentSnapshot doc) {
@@ -142,7 +142,7 @@ void showScoreChart(List<Map<String, dynamic>> fetchedScoreValues) {
                 decoration: InputDecoration(hintText: 'Enter Name'),
               ),
               const SizedBox(height: 10), // Add some spacing
-              const Text("Highest Scores:"),
+              const Text("TOP-3"),
              for (Map<String, dynamic> score in fetchedScoreValues)
                   Text('${score['playerName']} - ${score['scoreValue']}'),
 
@@ -313,7 +313,7 @@ void showScoreChart(List<Map<String, dynamic>> fetchedScoreValues) {
               ),
 
               // highscores, top 5
-              const Text('HighScores..'),
+              // const Text('HighScores..'),
             ],
           )),
           // game grid
